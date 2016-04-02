@@ -1,0 +1,9 @@
+# pycharm ide settings
+.idea
+
+# Log files
+*.log
+
+# Apache Pig output
+*.crc
+_SUCCESS
