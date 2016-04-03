@@ -1,31 +1,44 @@
-var tm;
+var tm
 $(function() {
+    TimeMap.loaders.custom = function(options) {
+        var loader = new TimeMap.loaders.remote(options);
+        loader.parse = JSON.parse;
+        loader.preload = function(data) {
+            return data['limitSortedInput']
+        }
+        loader.transform = function(data) {
+            return {
+                "title" : "Station ID: " + data.id,
+                "start" : data.date,
+                "options" : {
+                "description" : "Temp: " + data.temp + "°C"
+                },
+            "point": {
+                "lat" : data.lat,
+                "lon" : data.lon,
+                }
+            };
+        };
+        return loader;
+    };
 
     tm = TimeMap.init({
         mapId: "map",               // Id of map div element (required)
         timelineId: "timeline",     // Id of timeline div element (required)
         options: {
-            eventIconPath: "images/"
+            eventIconPath: "../images/"
         },
         datasets: [
             {
-                title: "Events",
-                id: "events",
-                theme: "purple",
-                type: "gss",
+                type: "custom",
                 options: {
-                    // note that your spreadsheet must be published for this to work
-                    key: "1ebvs1xT1L8BcOj5iMCaT9awV5hRHnJSlQzxopDzNmZw",
-                    // map spreadsheet column names to expected ids
-                    paramMap: {
-                        start: "date"
-                    }
+                    url: "output_json/part-r-00000"
                 }
             }
         ],
-        bandIntervals: [
-            Timeline.DateTime.WEEK,
-            Timeline.DateTime.MONTH
+     bandIntervals: [
+            Timeline.DateTime.DAY,
+            Timeline.DateTime.WEEK
         ]
     });
 });
