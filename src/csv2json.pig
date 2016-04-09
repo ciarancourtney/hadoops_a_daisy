@@ -9,13 +9,13 @@ myInput = LOAD 'data/2016.tmin'
   '(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)') AS (month:chararray,day:chararray,id:int,lon:float,lat:float,temp:float);
 
 -- Concatenate the month and date into an ISO standard date format (yyyy-mm-dd)
-myOutput = FOREACH myInput GENERATE id, CONCAT('2016-',CONCAT(month,CONCAT('-',day))) AS date,lon,lat,temp;
+myOutput = FOREACH myInput GENERATE id, CONCAT('2016-',CONCAT(month,CONCAT('-',day))) AS date,lon,lat,temp AS z;
 
--- Sort output by desc temp
-sortedOutput = ORDER myOutput BY temp DESC;
+-- Sort output by desc z
+sortedOutput = ORDER myOutput BY z DESC;
 
 -- Limit output to 5000 records for performance
-limitSortedInput = LIMIT sortedOutput 5000;
+limitSortedInput = LIMIT sortedOutput 500;
 
 -- Group all results into an array 'myOutputGroup'
 myOutputGroup = GROUP limitSortedInput ALL;
