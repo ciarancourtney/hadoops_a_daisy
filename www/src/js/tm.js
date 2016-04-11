@@ -8,10 +8,10 @@ $(function() {
         }
         loader.transform = function(data) {
             return {
-                "title" : data.id,
+                "title" : data.STATION_NAME,
                 "start" : data.date,
                 "options" : {
-                "description" : "z: " + data.z
+                "description" : "z: " + data.SNOW + "ele: " + data.ELEVATION
                 },
             "point": {
                 "lat" : data.lat,
