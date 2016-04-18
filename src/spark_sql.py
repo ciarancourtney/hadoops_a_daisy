@@ -1,14 +1,18 @@
 #!/opt/spark-1.6.1-bin-hadoop2.6/bin/pyspark
 
+"""
+
+Refs:
+pyspark import for pycharm debugging: http://renien.com/blog/accessing-pyspark-pycharm/
+
+"""
+
 import os
 import sys
+import json
+import shutil
 
-pwd = os.getcwd()
-
-# Path for spark source folder
 os.environ['SPARK_HOME'] = "/opt/spark-1.6.1-bin-hadoop2.6"
-
-# Append pyspark to Python Path
 sys.path.append("/opt/spark-1.6.1-bin-hadoop2.6/python")
 sys.path.append("/opt/spark-1.6.1-bin-hadoop2.6/python/lib/py4j-0.9-src.zip")
 
@@ -17,7 +21,6 @@ try:
     from pyspark import SparkConf
     from pyspark import SQLContext
     print ("Successfully imported Spark Modules")
-
 except ImportError as e:
     print ("Can not import Spark Modules", e)
     sys.exit(1)
@@ -27,24 +30,26 @@ if __name__ == "__main__":
     sc = SparkContext(appName="PythonSQL")
     sqlContext = SQLContext(sc)
 
-    if len(sys.argv) < 2:
-        path = "file://" + os.path.join(pwd, "../data/2006_1sthalf.csv")
-        #path = "file://home/ubuntu/hadoops_a_daisy/data/2006_1sthalf.csv"
-    else:
-        path = sys.argv[1]
+    with open('../www/output_json/part-r-00000') as json_payload:
+        data = json.load(json_payload)
 
-    # Create a DataFrame from the file(s) pointed to by path
-    payload = sqlContext.jsonFile(path)
+    # Truncate to limitSortedInput object only
+    ds = [json.dumps(item) for item in data['limitSortedInput']]
+    dataframe = sqlContext.jsonRDD(sc.parallelize(ds))
+    dataframe.printSchema()
 
-    payload.printSchema()
+    # Cache for iterative performance
+    dataframe.cache()
+    dataframe.registerTempTable("temp_table")
 
-    # Register this DataFrame as a table.
-    payload.registerAsTable("snow")
+    # Query data using standard SQL
+    spark_sql = sqlContext.sql("SELECT STATION_NAME, date, lat, lon FROM temp_table")
 
-    # SQL statements can be run by using the sql methods provided by sqlContext
-    much_snow = sqlContext.sql("SELECT * FROM limitSortedInput WHERE SNOW >= 100")
+    # Delete previous results
+    shutil.rmtree('../www/output_json_spark/')
 
-    for each in much_snow.collect():
-        print(each[0])
+    # Output to JSON
+    spark_sql.toJSON().saveAsTextFile("../www/output_json_spark/")
 
+    # Shutdown Spark
     sc.stop()
