@@ -10,7 +10,6 @@ pyspark import for pycharm debugging: http://renien.com/blog/accessing-pyspark-p
 import os
 import sys
 import json
-import shutil
 
 os.environ['SPARK_HOME'] = "/opt/spark-1.6.1-bin-hadoop2.6"
 sys.path.append("/opt/spark-1.6.1-bin-hadoop2.6/python")
@@ -30,13 +29,25 @@ if __name__ == "__main__":
     sc = SparkContext(appName="PythonSQL")
     sqlContext = SQLContext(sc)
 
-    with open('../www/output_json/part-r-00000') as json_payload:
+    with open('www/output_json/part-r-00000') as json_payload:
         data = json.load(json_payload)
 
     # Truncate to limitSortedInput object only
     ds = [json.dumps(item) for item in data['limitSortedInput']]
     dataframe = sqlContext.jsonRDD(sc.parallelize(ds))
     dataframe.printSchema()
+
+    # Should print:
+    #
+    # root
+    # |-- ELEVATION: double (nullable = true)
+    # |-- SNOW: long (nullable = true)
+    # |-- SNOW_Time_of_Observation: string (nullable = true)
+    # |-- STATION: string (nullable = true)
+    # |-- STATION_NAME: string (nullable = true)
+    # |-- date: string (nullable = true)
+    # |-- lat: double (nullable = true)
+    # |-- lon: double (nullable = true)
 
     # Cache for iterative performance
     dataframe.cache()
@@ -45,11 +56,9 @@ if __name__ == "__main__":
     # Query data using standard SQL
     spark_sql = sqlContext.sql("SELECT STATION_NAME, date, lat, lon FROM temp_table")
 
-    # Delete previous results
-    shutil.rmtree('../www/output_json_spark/')
-
     # Output to JSON
-    spark_sql.toJSON().saveAsTextFile("../www/output_json_spark/")
+    spark_sql.toJSON().saveAsTextFile("www/output_json_spark/")
 
-    # Shutdown Spark
+    # Shutdown Spark and exit python
     sc.stop()
+    sys.exit()
