@@ -1,6 +1,6 @@
 ## Prerequisites - Install Apache Pig
 
-    get http://mirrors.whoishostingthis.com/apache/pig/latest/pig-0.15.0.tar.gz
+    wget http://mirrors.whoishostingthis.com/apache/pig/latest/pig-0.15.0.tar.gz
     sudo tar -xvf pig-0.15.0.tar.gz -C /opt
     sudo chown -R ubuntu:ubuntu /opt/pig-0.15.0
 
