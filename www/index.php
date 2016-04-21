@@ -16,7 +16,7 @@
 <!--
 
 <?php
-$output = shell_exec("../bin/run_csv2json.sh 2>&1")
+$output = shell_exec("../bin/run_csv2json.sh 2>&1");
 ?>
 
 -->
