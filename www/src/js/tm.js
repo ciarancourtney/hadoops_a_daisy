@@ -11,7 +11,7 @@ $(function() {
                 "title" : data.STATION_NAME,
                 "start" : data.date,
                 "options" : {
-                "description" : "z: " + data.SNOW + "ele: " + data.ELEVATION
+                "description" : "Snow (mm):" + data.SNOW + "  elev (m): " + data.ELEVATION + " lat: " + data.lat + " lon: " + data.lon
                 },
             "point": {
                 "lat" : data.lat,
