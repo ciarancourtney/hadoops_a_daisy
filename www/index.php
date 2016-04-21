@@ -11,7 +11,16 @@
     <link type="text/css" href="src/css/examples.css" rel="stylesheet"/>
 </head>
 
+
 <body>
+<!--
+
+<?php
+$output = shell_exec("../bin/run_csv2json.sh 2>&1")
+?>
+
+-->
+
 <div id="timemap">
     <div id="timelinecontainer">
         <div id="timeline"></div>
@@ -20,4 +29,9 @@
         <div id="map"></div>
     </div>
 </div>
+
+
+
+
+
 </body>
