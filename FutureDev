@@ -1,0 +1,177 @@
+
+
+curl -H token:<PMLotGtekuFkCiXhneuQnqbCjEjSJJoN> http://www.ncdc.noaa.gov/cdo-web/api/v2/
+$.ajax({ url:<http://www.ncdc.noaa.gov/cdo-web/api/v2/>, data:{<data>}, headers:{ token:<PMLotGtekuFkCiXhneuQnqbCjEjSJJoN> } })
+
+//www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND
+				&datacategories=PRCP
+				&datacategoryid=MDSF
+				&datacategoryid=DASF
+				&datacategoryid=SNWD
+				&datacategoryid=SNOW
+				&locationid=CNTRY:US
+				&startdate=%today%-3652&enddate=%today%-1
++# Above code is to place a JSON call for a refreshed data set from the NOAA every 5 days. It will be scheduled by using a CRON task
++#json-to-csv
+ ===========
+ 
+-Nested JSON to CSV Converter
++*Nested JSON to CSV Converter.*
++
++This python script converts valid, preformatted JSON to CSV which can be opened in excel and similar applications.
++This script can handle nested json with multiple objects and arrays.
++Please see the explanation below and the sample files to understand how this works.
++It can handle non similar objects too. But, more the similarity of the objects, prettier the output.
+++##
++# This is as simple as a license can get. Please read 
++# carefully and understand before using.
++#
++# I wrote this script because I needed it. I am opening
++# up the source code to the world because I believe in 
++# the power of royalty free knowledge and shared ideas.
++#
++# 1. This piece of code comes to you at no cost and no 
++#    obligations.
++# 2. You get NO WARRANTIES OR GUARANTEES OR PROMISES of
++#    any kind.
++# 3. If you are using this script you understand the risks
++#    completely.
++# 4. I request and insist that you retain this notice without
++#    modification, but if you can't... I understand.
++#
++# --
++# Vinay Kumar N P 
++# vinay@askvinay.com
++# www.askVinay.com
++#
++##Referenced by the group - Fearghal O'Braoin, Tom Curtin, Ciaran Courtney, Mohammed Abduljabbar
++Written in Python 2.7
++
++Usage
++-----
++python /path/to/json_to_csv.py node_name json_in_file_path csv_out_file_path 
++
++Source Specification
++--------------------
++The script expects the json to be given via a file containing 
++
++* A valid JSON
++* The JSON will be an `Array` of `node` `Object`
++
++Ex:-
++
++```
++	{
++	    "node":[
++	        {
++	            "item_1":"value_11",
++	            "item_2":"value_12",
++	            "item_3":"value_13",
++	            "item_4":["sub_value_14", "sub_value_15"],
++	            "item_5":{
++	                "sub_item_1":"sub_item_value_11",
++	                "sub_item_2":["sub_item_value_12", "sub_item_value_13"]
++	            }
++	        },
++	        {
++	            "item_1":"value_21",
++	            "item_2":"value_22",
++	            "item_4":["sub_value_24", "sub_value_25"],
++	            "item_5":{
++	                "sub_item_1":"sub_item_value_21",
++	                "sub_item_2":["sub_item_value_22", "sub_item_value_23"]
++	            }
++	        }
++	    ]
++	}
++```
++
++Gotchas
++-------
++I have written a JSON generator which will take care of encoding issues and generate a valid JSON for this tool. 
++However, If you find yourself in the character encoding hell, drop me a mail and I will add support for this.
+105 json_to_csv.py
+@@ -0,0 +1,105 @@
++
++import sys
++import json
++import csv
++
++##
++# This function converts an item like 
++# {
++#   "item_1":"value_11",
++#   "item_2":"value_12",
++#   "item_3":"value_13",
++#   "item_4":["sub_value_14", "sub_value_15"],
++#   "item_5":{
++#       "sub_item_1":"sub_item_value_11",
++#       "sub_item_2":["sub_item_value_12", "sub_item_value_13"]
++#   }
++# }
++# To
++# {
++#   "node_item_1":"value_11",
++#   "node_item_2":"value_12",
++#   "node_item_3":"value_13",
++#   "node_item_4_0":"sub_value_14", 
++#   "node_item_4_1":"sub_value_15",
++#   "node_item_5_sub_item_1":"sub_item_value_11",
++#   "node_item_5_sub_item_2_0":"sub_item_value_12",
++#   "node_item_5_sub_item_2_0":"sub_item_value_13"
++# }
++##
++def reduce_item(key, value):
++    global reduced_item
++    
++    #Reduction Condition 1
++    if type(value) is list:
++        i=0
++        for sub_item in value:
++            reduce_item(key+'_'+str(i), sub_item)
++            i=i+1
++
++    #Reduction Condition 2
++    elif type(value) is dict:
++        sub_keys = value.keys()
++        for sub_key in sub_keys:
++            reduce_item(key+'_'+str(sub_key), value[sub_key])
++    
++    #Base Condition
++    else:
++        reduced_item[str(key)] = str(value)
++
++
++if __name__ == "__main__":
++    if len(sys.argv) != 4:
++        print "\nUsage: python json_to_csv.py <node_name> <json_in_file_path> <csv_out_file_path>\n"
++    else:
++        #Reading arguments
++        node = sys.argv[1]
++        json_file_path = sys.argv[2]
++        csv_file_path = sys.argv[3]
++
++        fp = open(json_file_path, 'r')
++        json_value = fp.read()
++        raw_data = json.loads(json_value)
++
++        processed_data = []
++        header = []
++        for item in raw_data[node]:
++            reduced_item = {}
++            reduce_item(node, item)
++
++            header += reduced_item.keys()
++
++            processed_data.append(reduced_item)
++
++        header = list(set(header))
++        header.sort()
++
++        with open(csv_file_path, 'wb+') as f:
++            writer = csv.DictWriter(f, header, quoting=csv.QUOTE_ALL)
++            writer.writeheader()
++            for row in processed_data:
++                writer.writerow(row)
++
++        print "Just completed writing csv file with %d columns" % len(header) 
