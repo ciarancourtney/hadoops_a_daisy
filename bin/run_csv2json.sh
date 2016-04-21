@@ -15,7 +15,7 @@ fi
 
 # Delete previous output otherwise pig will complain
 echo "Deleting Previous Output..."
-rm -r www/output_json
+rm -R www/output_json
 
 
 #Execute pig Script

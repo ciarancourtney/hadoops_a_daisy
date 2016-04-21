@@ -13,13 +13,48 @@
 
 
 <body>
-<!--
+
+How would you like to execute the filter?<br />
+
+<form action="index.php" method="post">
+<select name="ExecutionType">
+  <option value="pig">PIG</option>
+  <option value="spark">SPARK</option>
+</select>
+<br />
+<input type="submit">
+</form>
+
 
 <?php
-$output = shell_exec("../bin/run_csv2json.sh 2>&1");
+$execType = $_POST["ExecutionType"];
+switch ($execType) {
+	case "pig":
+	$output = shell_exec("../bin/run_csv2json.sh 2>&1");
+	$commentOutput = $output;
+	$visibleOutput = "Executed via PIG...";
+	break;
+
+	case "spark":
+	$commentOuptput = "";
+	$visibleOutput = "SPARK not yet implmemented...";
+	break;
+}
 ?>
 
+<br />
+
+<!--
+<?php
+	ECHO "Not recommended practice, but useful for debugging issues in test...";
+	ECHO $commentOutput;
+?>
 -->
+
+<?php
+	ECHO $visibleOutput;
+?>
+<br />
 
 <div id="timemap">
     <div id="timelinecontainer">
