@@ -4,18 +4,18 @@ $(function() {
         var loader = new TimeMap.loaders.remote(options);
         loader.parse = JSON.parse;
         loader.preload = function(data) {
-            return data['limitSortedInput']
+            return data
         }
         loader.transform = function(data) {
             return {
-                "title" : data.STATION_NAME,
-                "start" : data.date,
+                "title" : data[0],  // STATION_NAME
+                "start" : data[1],  // date
                 "options" : {
-                "description" : "Snow (mm):" + data.SNOW + "  elev (m): " + data.ELEVATION + " lat: " + data.lat + " lon: " + data.lon
+                "description" : "Snow (mm): " + data[2] + "  elev (m): " + data[3] + " lat: " + data[4] + " lon: " + data[5]
                 },
             "point": {
-                "lat" : data.lat,
-                "lon" : data.lon,
+                "lat" : data[4],
+                "lon" : data[5],
                 }
             };
         };
@@ -32,7 +32,7 @@ $(function() {
             {
                 type: "custom",
                 options: {
-                    url: "output_json/part-r-00000"
+                    url: "output_json_spark/output.json"
                 }
             }
         ],

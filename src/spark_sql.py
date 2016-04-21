@@ -29,7 +29,7 @@ if __name__ == "__main__":
     sc = SparkContext(appName="PythonSQL")
     sqlContext = SQLContext(sc)
 
-    with open('www/output_json/part-r-00000') as json_payload:
+    with open('/home/ubuntu/hadoops_a_daisy/www/output_json/part-r-00000') as json_payload:
         data = json.load(json_payload)
 
     # Truncate to limitSortedInput object only
@@ -54,11 +54,11 @@ if __name__ == "__main__":
     dataframe.registerTempTable("temp_table")
 
     # Query data using standard SQL
-    spark_sql = sqlContext.sql("SELECT STATION_NAME, date, lat, lon FROM temp_table")
+    spark_sql = sqlContext.sql("SELECT STATION_NAME, date, SNOW, ELEVATION, lat, lon FROM temp_table WHERE (lat BETWEEN 30 AND 45) AND (lon BETWEEN -130 AND -118)").collect()
 
-    # Output to JSON
-    spark_sql.toJSON().saveAsTextFile("www/output_json_spark/")
+    with open('/home/ubuntu/hadoops_a_daisy/www/output_json_spark/output.json', 'w') as outfile:
+        json.dump(spark_sql, outfile)
 
     # Shutdown Spark and exit python
     sc.stop()
-    sys.exit()
+    raise SystemExit
