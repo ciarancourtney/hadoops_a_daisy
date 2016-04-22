@@ -1,14 +1,25 @@
 <?php
-$execType = $_POST["ExecutionType"];
+If ($_POST["pig"])
+{
+	$execType = "pig";
+}
+If ($_POST["spark"])
+{
+	$execType = "spark";
+}
 switch ($execType) {
         case "pig":
-        $technicalOutput = shell_exec("../bin/run_csv2json_noaa_snow.sh 2>&1");
-        $userOutput = "Executed via PIG...";
+        //$pigOutput = shell_exec("../bin/run_csv2json_noaa_snow.sh 2>&1");		
+		//$pigOutputFile = fopen("pigOutput.txt");
+		//fwrite($pigOutputFile, $pigOutput);
+        $userOutput = "PIG Executed... See \"PIG Output\" tab for further details..." ;
         break;
 
         case "spark":
-        $technicalOutput = shell_exec("../bin/run_spark.sh 2>&1");
-        $userOutput = "Executed via SPARK...";
+        $sparkOutput = shell_exec("../bin/run_spark.sh 2>&1");
+		$sparkOutputFile = fopen("sparkOutput.txt", "w");
+		fwrite($sparkOutputFile, $sparkOutput);        
+		$userOutput = "SPARK Executed... See \"SPARK Output\" tab for further details...";
         break;
 }
 ?>
@@ -26,46 +37,39 @@ switch ($execType) {
     <script type="text/javascript" src="lib/mxn/mxn.js?(google)"></script>
     <script type="text/javascript" src="lib/timeline-1.2.js"></script>
     <script type="text/javascript" src="lib/timemap_full.pack.js"></script>
+	<script type="text/javascript" src="src/js/tm2.js"></script>
 
-<?php
-//Add reference to js file for pig/spark
-switch ($execType) {
-		case "pig":
-        ECHO "<script type="text/javascript" src="src/js/tm.js"></script>";
-        break;
-        case "spark":
-        ECHO "<script type="text/javascript" src="src/js/tm2.js"></script>";	
-        break;
-		default:
-		ECHO "<script type="text/javascript" src="src/js/tm.js"></script>";
-}
-?> 
-	
     <link type="text/css" href="src/css/examples.css" rel="stylesheet"/>
 </head>
 <body>
 
+<!--
+<?php
+	ECHO $execType;
+?>
+-->
+
 <div class="container">
   <h2>Top Locations For Snowfall Based On NOAA Data For Last 10 Years</h2>
   <br />
-  <h3>What technology would you like to execute the filter via?</h3> 
-  <form action="index.php" method="post">
-		<select name="ExecutionType">
-			<option value="pig">PIG</option>
-			<option value="spark">SPARK</option>
-		</select>
+  <h3>Update data...</h3> 
+  <form action="index.php" method="post">   
+	<input type="submit" name="pig" value ="PIG">
 	<br />
-	<input type="submit">
+	<input type="submit" name="spark" value ="SPARK">		
+	<br />
 	</form>
 
 <?php
-        ECHO nl2br($userOutput);
+        ECHO $userOutput;
 ?>
+
 <br />
   
   <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#snowFallTimeLineMap">Snowfall Timeline & Map</a></li>
-    <li><a data-toggle="tab" href="#technicalDetails">Technical Details</a></li>
+    <li><a data-toggle="tab" href="#outputPig">PIG Output</a></li>
+	<li><a data-toggle="tab" href="#outputSpark">Spark Output</a></li>
   </ul>
 
   <div class="tab-content">
@@ -79,10 +83,20 @@ switch ($execType) {
 			<div id="map"></div>
 		</div>
     </div>
-    <div id="technicalDetails" class="tab-pane fade">
-		<?php
-			ECHO "Not recommended practice, but useful for debugging issues in test...";
-			ECHO $technicalOutput;
+    <div id="outputPig" class="tab-pane fade">
+		<?php		
+			$pigFile = fopen("pigOutput.txt", "r");
+			$pigText = fread($pigFile, filesize("pigOutput.txt"));
+			fclose($pigFile);
+			ECHO nl2br($pigText);				
+		?>
+    </div>
+	<div id="outputSpark" class="tab-pane fade">
+		<?php		
+			$sparkFile = fopen("sparkOutput.txt", "r");
+			$sparkText = fread($sparkFile, filesize("sparkOutput.txt"));
+			fclose($sparkFile);
+			ECHO nl2br($sparkText);			
 		?>
     </div>
   </div>
