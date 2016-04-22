@@ -11,7 +11,7 @@ $(function() {
                 "title" : data[0],  // STATION_NAME
                 "start" : data[1],  // date
                 "options" : {
-                "description" : "Snow (mm): " + data[2] + "  elev (m): " + data[3] + " lat: " + data[4] + " lon: " + data[5]
+                "description" : "Snow (mm): " + data[2] + "  elev (m): " + data[3] + " lat: " + data[4] + " lon: " + data[5] + " " + data[1]
                 },
             "point": {
                 "lat" : data[4],
@@ -37,8 +37,8 @@ $(function() {
             }
         ],
      bandIntervals: [
-            Timeline.DateTime.DAY,
-            Timeline.DateTime.WEEK
+            Timeline.DateTime.WEEK,
+            Timeline.DateTime.MONTH
         ]
     });
 });
