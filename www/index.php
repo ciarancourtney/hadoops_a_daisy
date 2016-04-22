@@ -9,17 +9,15 @@ If ($_POST["spark"])
 }
 switch ($execType) {
         case "pig":
-        //$pigOutput = shell_exec("../bin/run_csv2json_noaa_snow.sh 2>&1");		
-		//$pigOutputFile = fopen("pigOutput.txt");
-		//fwrite($pigOutputFile, $pigOutput);
-        $userOutput = "PIG Executed... See \"PIG Output\" tab for further details..." ;
+        $pigOutput = shell_exec("../bin/run_csv2json_noaa_snow.sh 2>&1");
+        $myfile = file_put_contents('pigOutput.txt', $pigOutput.PHP_EOL);
+        $userOutput = "PIG Executed... Please wait 6min, refresh and check \"PIG Output\" tab for further details..." ;
         break;
 
         case "spark":
         $sparkOutput = shell_exec("../bin/run_spark.sh 2>&1");
-		$sparkOutputFile = fopen("sparkOutput.txt", "w");
-		fwrite($sparkOutputFile, $sparkOutput);        
-		$userOutput = "SPARK Executed... See \"SPARK Output\" tab for further details...";
+        file_put_contents('sparkOutput.txt', $sparkOutput.PHP_EOL);
+        $userOutput = "SPARK Executed... See \"SPARK Output\" tab for further details...";
         break;
 }
 ?>
@@ -52,7 +50,7 @@ switch ($execType) {
 <div class="container">
   <h2>Top Locations For Snowfall Based On NOAA Data For Last 10 Years</h2>
   <br />
-  <h3>Update data...</h3> 
+  <h3>Run PIG followed by SPARK to update data...</h3>
   <form action="index.php" method="post">   
 	<input type="submit" name="pig" value ="PIG">
 	<br />
